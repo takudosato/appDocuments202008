@@ -1,23 +1,26 @@
-@startuml
+@startuml class diagram
+
+title: クラス図
 
 left to right direction
 
-
 'クラスの宣言
-package "View" {
+package "V" {
 
-  '
+  'GoogleMapを表示する
   class MapView {
   }
 
+  '検索地リストを表示する
   class PlaceListView {
   }
 }
 
 
-package "viewModel" {
+package "VM" {
 
-  interface SearchArea {
+  '検索機能を提供する
+  class SearchArea {
     +searchPlace: String
     +doSearch()
   }
@@ -25,15 +28,15 @@ package "viewModel" {
   class MapViewModel {
     +nowPlace: Place
     +nowWeather: WeatherInfo
-    
   } 
   
   class PlaceListViewModel {
     +placeList
   }
 }
+note bottom: ViewModeクラスはviewModeを継承する
 
-package "Model" {
+package "M" {
   class Repositry {
     +getWeaherInfo()
     +getPlaceList()
@@ -49,21 +52,6 @@ package "Model" {
     +addPlace
   }
 }
-
-'クラス関連
-
-"MapView" -- "MapViewModel" : salesRep
-"PlaceListView" -- "PlaceListViewModel"
-
-"MapViewModel" -- "Repositry"
-"PlaceListViewModel" -- "Repositry"
-
-"Repositry" -- "Weather"
-"Repositry" -- "DBPlace"
-
-"MapViewModel" -|> "SearchArea"
-"PlaceListViewModel" -|> "SearchArea"
-
 
 package Utility {
 
@@ -86,5 +74,23 @@ package Utility {
   }
 }
 
+'クラス関連
+' MapViewはGooglemapを保持
+OnMapReadyCallback ()-- MapView
+
+MapView --> MapViewModel : Data Bind / observer
+PlaceListView --> PlaceListViewModel : observer
+
+' VMクラスはviewModelを継承
+MapViewModel <--> Repositry : observer
+PlaceListViewModel <--> Repositry : observer
+
+' DBとWebAPIアクセスはクラスに任せる
+Repositry <--> Weather
+Repositry <--> DBPlace
+
+' VMは検索インターフェースを使う
+MapViewModel -|> SearchArea
+PlaceListViewModel -|> SearchArea
 
 @enduml
