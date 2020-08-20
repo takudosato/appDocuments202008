@@ -1,5 +1,53 @@
-@startuml
+@startuml listtap
 
+title: リストからタップ
 
+participant MapView order 10
+participant PlaceListView order 20
+participant MapViewModel order 30
+participant PlaceListViewModel order 40
+participant SearchArea order 50
+participant Repositry order 60
+participant Weather order 70
+participant DBPlace order 80
+
+skinparam SequenceMessageAlignment center
+
+PlaceListView -> PlaceListViewModel : タップを検知
+PlaceListViewModel -> SearchArea : 検索処理依頼
+SearchArea -> Repositry : 検索処理依頼
+Repositry ->> DBPlace : DBに検索地名追加
+Repositry -> MapViewModel : 地図移動処理依頼
+MapViewModel -> MapViewModel : nowPlace更新
+MapViewModel --> Repositry : nowPlaceの変更に伴いobserve
+Repositry ->> Weather : nowPlaceの天気情報問合せ
+Weather -> Repositry : 天気情報回答
+Repositry --> MapViewModel : LiveDataによるWeatherInfo更新
+MapViewModel --> MapView : データバインドにより更新
+
+@enduml
+
+@startuml mapchange
+
+title: ユーザによる地図位置変更
+
+participant MapView order 10
+'participant PlaceListView order 20
+participant MapViewModel order 30
+'participant PlaceListViewModel order 40
+'participant SearchArea order 50
+participant Repositry order 60
+participant Weather order 70
+'participant DBPlace order 80
+
+skinparam SequenceMessageAlignment center
+
+MapView -> MapViewModel : 地図位置変更を検知
+MapViewModel -> MapViewModel : nowPlace更新
+MapViewModel --> Repositry : nowPlaceの変更に伴いobserve
+Repositry ->> Weather : nowPlaceの天気情報問合せ
+Weather -> Repositry : 天気情報回答
+Repositry --> MapViewModel : LiveDataによるWeatherInfo更新
+MapViewModel --> MapView : データバインドにより更新
 
 @enduml
