@@ -1,0 +1,90 @@
+@startuml
+
+left to right direction
+
+
+'クラスの宣言
+package "View" {
+
+  '
+  class MapView {
+  }
+
+  class PlaceListView {
+  }
+}
+
+
+package "viewModel" {
+
+  interface SearchArea {
+    +searchPlace: String
+    +doSearch()
+  }
+
+  class MapViewModel {
+    +nowPlace: Place
+    +nowWeather: WeatherInfo
+    
+  } 
+  
+  class PlaceListViewModel {
+    +placeList
+  }
+}
+
+package "Model" {
+  class Repositry {
+    +getWeaherInfo()
+    +getPlaceList()
+    +addPlace()
+  }
+
+  class Weather <<retrofit>> {
+    +getWeatherInfo()
+  }
+
+  class DBPlace <<Room>> {
+    +getPlaceList()
+    +addPlace
+  }
+}
+
+'クラス関連
+
+"MapView" -- "MapViewModel" : salesRep
+"PlaceListView" -- "PlaceListViewModel"
+
+"MapViewModel" -- "Repositry"
+"PlaceListViewModel" -- "Repositry"
+
+"Repositry" -- "Weather"
+"Repositry" -- "DBPlace"
+
+"MapViewModel" -|> "SearchArea"
+"PlaceListViewModel" -|> "SearchArea"
+
+
+package Utility {
+
+  '場所を表すデータクラス
+  class Place <<data class>> {
+    +placeName: String //場所名
+    +longitude: Double //緯度
+    +latitude: Double //経度
+  }
+
+  '天気情報を表すデータクラス
+  class WeatherInfo <<data class>> {
+    +weatherID: String //天気ID
+    +iconPath: String //天気アイコンのパス
+  }
+
+  '地理情報変換
+  class Geo {
+    +getGeoInfo() //文字列から緯度経度を取得する
+  }
+}
+
+
+@enduml
