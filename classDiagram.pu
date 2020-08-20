@@ -16,7 +16,6 @@ package "V" {
   }
 }
 
-
 package "VM" {
 
   '検索機能を提供する
