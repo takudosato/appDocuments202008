@@ -2,94 +2,100 @@
 
 title: クラス図
 
-left to right direction
-
 'クラスの宣言
 package "V" {
 
   'GoogleMapを表示する
-  class MapView {
+  class MapActivity {
+    +mSearchText: EditText
+
+    -weatherObserve() //天気情報が更新されたらMapに反映
+    -searchLatLngObserve() //位置情報が更新されたらMapに反映
   }
 
-  '検索地リストを表示する
-  class PlaceListView {
+  class WeatherMarker{
+    -Marker? //マーカー位置はひとつだけ
+
+    +getInstance() //Singlton
+
+    +addWeatherMarker()
+    +addMarker()
+    -removeWeatherMarker()
+    -getIconID()
   }
 }
 
 package "VM" {
 
-  '検索機能を提供する
-  class SearchArea {
-    +searchPlace: String
-    +doSearch()
-  }
+  class MapActivityViewModel {
+    searchPlaceString: String //検索文字列をBinding
+    weatherStatus //天気情報 LiveData
+    searchLatLng //位置情報 LiveData
 
-  class MapViewModel {
-    +nowPlace: Place
-    +nowWeather: WeatherInfo
+    setMapClickPos() //weatherStatusを更新
   } 
-  
-  class PlaceListViewModel {
-    +placeList
-  }
+
 }
-note bottom: ViewModeクラスはviewModeを継承する
 
 package "M" {
   class Repositry {
-    +getWeaherInfo()
-    +getPlaceList()
-    +addPlace()
+    +getWeather()
+    +getPlaceDBData()
+    +insertDBPlaceData()
   }
 
-  class Weather <<retrofit>> {
-    +getWeatherInfo()
+  class OpenWeatherMapAccess{
+    +getWeatherInfobyLatLng()
   }
 
-  class DBPlace <<Room>> {
-    +getPlaceList()
-    +addPlace
+  class PlaceDBAccess {
+    +getPlaceDBData()
+    +insertDBPlaceData()
+  }
+
+  class PlaceDatabase{
+  }
+
+  interface PlaceDBDAO{
+    +insert()
+    +getAll()
+    +eleteAll()
   }
 }
 
-package Utility {
+package data {
 
   '場所を表すデータクラス
-  class Place <<data class>> {
+  class PlaceDBData <<data class>> {
     +placeName: String //場所名
     +longitude: Double //緯度
     +latitude: Double //経度
   }
 
   '天気情報を表すデータクラス
-  class WeatherInfo <<data class>> {
+  class WeatherData <<data class>> {
     +weatherID: String //天気ID
     +iconPath: String //天気アイコンのパス
   }
 
-  '地理情報変換
-  class Geo {
-    +getGeoInfo() //文字列から緯度経度を取得する
-  }
 }
 
 'クラス関連
-' MapViewはGooglemapを保持
-OnMapReadyCallback ()-- MapView
+' MapActivityはGooglemapを保持
+WeatherMarker -> MapActivity : Singleton
 
-MapView --> MapViewModel : Data Bind / observer
-PlaceListView --> PlaceListViewModel : observer
+MapActivity -> MapActivityViewModel : DataBinding / LiveData(Observe)
 
-' VMクラスはviewModelを継承
-MapViewModel <--> Repositry : observer
-PlaceListViewModel <--> Repositry : observer
+' VMクラスとMクラス
+MapActivityViewModel -> Repositry
 
 ' DBとWebAPIアクセスはクラスに任せる
-Repositry <--> Weather
-Repositry <--> DBPlace
+Repositry --> OpenWeatherMapAccess
+Repositry --> PlaceDBAccess
 
-' VMは検索インターフェースを使う
-MapViewModel -|> SearchArea
-PlaceListViewModel -|> SearchArea
+PlaceDBAccess --> PlaceDatabase
+PlaceDBAccess --> PlaceDBDAO
+
+WeatherMarker -[hidden]do- WeatherData
 
 @enduml
