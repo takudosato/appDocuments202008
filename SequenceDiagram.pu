@@ -1,53 +1,51 @@
-@startuml listtap
+@startuml dispWeatherInfo
 
-title: リストからタップ
+title: タップからの情報表示
 
-participant MapView order 10
-participant PlaceListView order 20
-participant MapViewModel order 30
-participant PlaceListViewModel order 40
-participant SearchArea order 50
-participant Repositry order 60
-participant Weather order 70
-participant DBPlace order 80
+Actor "User" as USER
+participant MapsView order 10 #00FF00
+participant WeatherMarker order 20
+participant MapsViewModel order 30 #00FF00
+participant Repositry order 40 #00FF00
+participant OpenWeatherMapAccess order 50
 
 skinparam SequenceMessageAlignment center
 
-PlaceListView -> PlaceListViewModel : タップを検知
-PlaceListViewModel -> SearchArea : 検索処理依頼
-SearchArea -> Repositry : 検索処理依頼
-Repositry ->> DBPlace : DBに検索地名追加
-Repositry -> MapViewModel : 地図移動処理依頼
-MapViewModel -> MapViewModel : nowPlace更新
-MapViewModel --> Repositry : nowPlaceの変更に伴いobserve
-Repositry ->> Weather : nowPlaceの天気情報問合せ
-Weather -> Repositry : 天気情報回答
-Repositry --> MapViewModel : LiveDataによるWeatherInfo更新
-MapViewModel --> MapView : データバインドにより更新
+USER -> MapsView : 地図タップを検知
+MapsView -> MapsViewModel : 位置情報
+group コルーチン（別スレッド）
+MapsViewModel -> Repositry : get(位置情報)
+Repositry -> OpenWeatherMapAccess : get(位置情報)
+OpenWeatherMapAccess -> Repositry : 天気情報
+Repositry -> MapsViewModel : 天気情報
+MapsViewModel -> MapsViewModel : 天気情報更新
+end
+MapsViewModel --> MapsView : Observe
+MapsView -> WeatherMarker : get
+WeatherMarker -> MapsView : iconデータ
+MapsView -> MapsView : Map更新
 
 @enduml
 
-@startuml mapchange
+@startuml linsertWeatherInfo
 
-title: ユーザによる地図位置変更
+title: 天気位置情報のDB登録
 
-participant MapView order 10
-'participant PlaceListView order 20
-participant MapViewModel order 30
-'participant PlaceListViewModel order 40
-'participant SearchArea order 50
-participant Repositry order 60
-participant Weather order 70
-'participant DBPlace order 80
+Actor "User" as USER
+participant MapsView order 10 #00FF00
+participant MapsViewModel order 30 #00FF00
+participant Repositry order 40 #00FF00
+participant PlaceDBAccess order 50
+participant PlaceDBDAO order 60
 
 skinparam SequenceMessageAlignment center
 
-MapView -> MapViewModel : 地図位置変更を検知
-MapViewModel -> MapViewModel : nowPlace更新
-MapViewModel --> Repositry : nowPlaceの変更に伴いobserve
-Repositry ->> Weather : nowPlaceの天気情報問合せ
-Weather -> Repositry : 天気情報回答
-Repositry --> MapViewModel : LiveDataによるWeatherInfo更新
-MapViewModel --> MapView : データバインドにより更新
+USER -> MapsView : 位置設定
+group コルーチン（別スレッド）
+MapsView -> MapsViewModel : insert
+MapsViewModel -> Repositry : insert
+Repositry -> PlaceDBAccess : insert
+PlaceDBAccess -> PlaceDBDAO : insert
+end
 
 @enduml

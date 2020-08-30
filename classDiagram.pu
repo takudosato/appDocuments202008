@@ -6,7 +6,7 @@ title: クラス図
 package "V" {
 
   'GoogleMapを表示する
-  class MapActivity {
+  class MapActivity #00FF00 {
     +mSearchText: EditText
 
     -weatherObserve() //天気情報が更新されたらMapに反映
@@ -27,7 +27,7 @@ package "V" {
 
 package "VM" {
 
-  class MapActivityViewModel {
+  class MapsViewModel #00FF00  {
     searchPlaceString: String //検索文字列をBinding
     weatherStatus //天気情報 LiveData
     searchLatLng //位置情報 LiveData
@@ -38,7 +38,7 @@ package "VM" {
 }
 
 package "M" {
-  class Repositry {
+  class Repositry #00FF00  {
     +getWeather()
     +getPlaceDBData()
     +insertDBPlaceData()
@@ -84,10 +84,10 @@ package data {
 ' MapActivityはGooglemapを保持
 WeatherMarker -> MapActivity : Singleton
 
-MapActivity -> MapActivityViewModel : DataBinding / LiveData(Observe)
+MapActivity -> MapsViewModel : DataBinding / LiveData(Observe)
 
 ' VMクラスとMクラス
-MapActivityViewModel -> Repositry
+MapsViewModel -> Repositry
 
 ' DBとWebAPIアクセスはクラスに任せる
 Repositry --> OpenWeatherMapAccess
